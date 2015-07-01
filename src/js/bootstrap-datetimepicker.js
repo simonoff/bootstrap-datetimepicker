@@ -369,11 +369,13 @@
             },
 
             place = function () {
-                var position = (component || element).position(),
-                    offset = (component || element).offset(),
+                var offset = (component || element).offset(),
                     vertical = options.widgetPositioning.vertical,
                     horizontal = options.widgetPositioning.horizontal,
-                    parent;
+                    parent,
+                    position,
+                    topCss,
+                    leftCss;
 
                 if (options.widgetParent) {
                     parent = options.widgetParent.append(widget);
@@ -386,6 +388,11 @@
                     parent = element;
                     element.children().first().after(widget);
                 }
+
+                position = {
+                    left: (component || element).offset().left - $(parent).offset().left,
+                    top: (component || element).offset().top - $(parent).offset().top
+                };
 
                 // Top and bottom logic
                 if (vertical === 'auto') {
@@ -430,12 +437,19 @@
                     throw new Error('datetimepicker component should be placed within a relative positioned container');
                 }
 
-                widget.css({
-                    top: vertical === 'top' ? 'auto' : position.top + element.outerHeight(),
-                    bottom: vertical === 'top' ? position.top + element.outerHeight() : 'auto',
-                    left: horizontal === 'left' ? (parent === element ? 0 : position.left) : 'auto',
-                    right: horizontal === 'left' ? 'auto' : parent.outerWidth() - element.outerWidth() - (parent === element ? 0 : position.left)
-                });
+                if (vertical === 'top') {
+                    topCss = position.top - ((component || element).outerHeight() / 2) - widget.outerHeight();
+                } else {
+                    topCss = position.top + (component || element).outerHeight();
+                }
+
+                if (horizontal === 'left') {
+                    leftCss = position.left + (component || element).outerWidth() - widget.outerWidth();
+                } else {
+                    leftCss = position.left + ((component || element).outerWidth() / 2);
+                }
+
+                widget.css({top: topCss, left: leftCss});
             },
 
             notifyEvent = function (e) {
